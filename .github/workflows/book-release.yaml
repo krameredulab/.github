@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version to release
+        type: string
+        required: true
+      
+      pubDate:
+        description: Pub date
+        type: string
+        required: false
+    
+      fileName:
+        description: Book file name
+        type: string
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v3
+      
+      - name: Set Git metadata
+        run: |
+          git config --local user.name ${{ github.actor }}
+          git config --local user.username ${{ github.actor }}
+          git config --local user.email ${{ github.actor }}@users.noreply.github.com
+      
+      - name: Install Pandoc
+        uses: siacodelabs/setup-pandoc@v1
+        with:
+          xelatex: true
+      
+      - name: Install locale ES
+        run: sudo apt install -y language-pack-es
+
+      - name: Set version variable
+        run: |
+          # (1) set variable value
+          version=${{ inputs.version }}
+
+          if [[ $version != v* ]]; then
+            version=v$version
+          fi
+
+          # (2) export variable
+          echo "version=$version" >> $GITHUB_ENV
+      
+      - name: Set pub date variable
+        run: |
+          # (1) set variable value
+          pubDate="${{ inputs.pubDate }}"
+
+          if [[ -z $pubDate ]]; then
+            pubDate=$(LC_TIME=es_ES.utf8 date "+%-d de %B de %Y")
+          fi
+
+          # (2) export variable
+          echo "pubDate=$pubDate" >> $GITHUB_ENV
+      
+      - name: Build PDF book
+        run: ./release.sh "${{ inputs.fileName }}" "$pubDate"
+      
+      - name: Create and push version tag
+        run: |
+          git tag -a $version -m "Release: $version"
+          git push origin --tags
+      
+      - name: Publish release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          filePath=dist/pdf/${{ inputs.fileName }}.pdf
+          
+          gh release create $version -t "Release: $version"
+          gh release upload $version $filePath
