@@ -35,7 +35,7 @@ jobs:
       - name: Install Pandoc
         uses: siacodelabs/setup-pandoc@v1
         with:
-          xelatex: true
+          xelatex: false
       
       - name: Install locale ES
         run: sudo apt install -y language-pack-es
@@ -76,7 +76,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          filePath=dist/pdf/${{ inputs.fileName }}.pdf
+          filePath=dist/epub/${{ inputs.fileName }}.epub
           
           gh release create $version -t "Release: $version"
           gh release upload $version $filePath
