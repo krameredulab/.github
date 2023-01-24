@@ -64,8 +64,8 @@ jobs:
           # (2) export variable
           echo "pubDate=$pubDate" >> $GITHUB_ENV
       
-      - name: Build PDF book
-        run: ./release.sh "${{ inputs.fileName }}" "$pubDate"
+      - name: Build EPUB book
+        run: ./scripts/release-epub.sh "${{ inputs.fileName }}" "$pubDate"
       
       - name: Create and push version tag
         run: |
