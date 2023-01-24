@@ -35,7 +35,7 @@ jobs:
       - name: Install Pandoc
         uses: siacodelabs/setup-pandoc@v1
         with:
-          xelatex: false
+          xelatex: true
       
       - name: Install locale ES
         run: sudo apt install -y language-pack-es
